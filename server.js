@@ -61,8 +61,19 @@ const wss = new WebSocket.Server({ port: 8081 });
 console.log('Cluster backend WebSocket running on :8081');
 
 setInterval(() => {
+    // ЭТА часть генерирует фейковые данные для теста фронта!
+    marketData = {
+        BTCUSDT: {
+            clusters: [],
+            lastPrice: 12345 + Math.random()*100,
+            heat: Math.random(),
+            tape: [
+                { price: 12345, volume: 0.2, time: "12:34:56", side: "BUY" }
+            ]
+        }
+    };
     const json = JSON.stringify(marketData);
-    console.log('marketData:', json); // <-- Вывод в лог для проверки наполнения
+    console.log('marketData:', json);
     wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) client.send(json);
     });
