@@ -1,7 +1,7 @@
 const WebSocket = require('ws');
-const fetch = require('node-fetch');
+// const fetch = require('node-fetch'); // не нужен, если только кластер
 
-// USDT-пары для трекинга — для теста оставь только один тикер, чтобы исключить лимит Binance
+// Оставляем только один тикер!
 const tickers = ["BTCUSDT"];
 
 let marketData = {}; // { symbol: { clusters: [...], lastPrice, heat, tape: [...] } }
@@ -39,7 +39,6 @@ function subscribeBinance(symbol) {
 
         // обновляем данные
         const heat = Math.min(1, currentCluster.total / 50);
-        // Лента теперь из последних 10 сделок (можно больше/меньше)
         marketData[symbol] = {
             clusters: clusters.slice(-10),
             lastPrice: price,
@@ -61,19 +60,8 @@ const wss = new WebSocket.Server({ port: 8081 });
 console.log('Cluster backend WebSocket running on :8081');
 
 setInterval(() => {
-    // ЭТА часть генерирует фейковые данные для теста фронта!
-    marketData = {
-        BTCUSDT: {
-            clusters: [],
-            lastPrice: 12345 + Math.random()*100,
-            heat: Math.random(),
-            tape: [
-                { price: 12345, volume: 0.2, time: "12:34:56", side: "BUY" }
-            ]
-        }
-    };
     const json = JSON.stringify(marketData);
-    console.log('marketData:', json);
+    console.log('marketData:', json); // Для отладки
     wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) client.send(json);
     });
